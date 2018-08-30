@@ -1,8 +1,8 @@
 flysas_url = "https://classic.flysas.com/en/us/"
 
 payload = {
-    #"__EVENTTARGET" : "ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$Searchbtn$ButtonLink",
-    #"__EVENTARGUMENT" : "",
+    "__EVENTTARGET" : "ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$Searchbtn$ButtonLink",
+    "__EVENTARGUMENT" : "",
     "ctl00$FullRegion$TopRegion$_siteHeader$hdnProfilingConsent" : "",
     "ctl00$FullRegion$TopRegion$_siteHeader$hdnTermsConsent" : "",
     "ctl00$FullRegion$TopRegion$_siteHeader$_ssoLogin$MainFormBorderPanel$uid" : "",
@@ -42,19 +42,23 @@ payload = {
     "ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$cepPassengerTypes$passengerTypeInfant" :"0",
     "ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$hdnsetDefaultValue" :"true",
     "ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$hdncalendarDropdown" :"true",
-    #"__PREVIOUSPAGE" :"3aoIK5urOF6qLmjEUVWoe7Zlok_H7Ef8UkS2oCFR_Ccg24aQSIRhidbF3PGeuRmIFTuiGxx8ealPNKfgqBWh77mCC2k1",
+    "__PREVIOUSPAGE" :"3aoIK5urOF6qLmjEUVWoe7Zlok_H7Ef8UkS2oCFR_Ccg24aQSIRhidbF3PGeuRmIFTuiGxx8ealPNKfgqBWh77mCC2k1",
 }
 
 button_name = "ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$Searchbtn$ButtonLink"
 
 def requests_download_html(url, payload):
     import requests
-    with requests.post(url, payload, allow_redirects = True) as resp:
+    session = requests.Session()
+    with session.post(url, payload, allow_redirects = True) as resp:
         print(resp.content)
+    session.close()
 
 def selenium_download_html(url, payload, submit_button):
     from selenium import webdriver
+    from selenium.webdriver.common.keys import Keys
     from selenium.common.exceptions import ElementNotVisibleException
+    import time
 
     opts = webdriver.ChromeOptions()
     opts.binary_location = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\Chrome.exe"
@@ -68,6 +72,9 @@ def selenium_download_html(url, payload, submit_button):
             if elem.is_displayed:
                 try:
                     elem.send_keys(value)
+                    elem.click()
+                    time.sleep(1)
+                    elem.send_keys(Keys.ENTER)
                 except ElementNotVisibleException as e:
                     err.write("{}\n{}\n".format(elem, e))
                     continue
@@ -96,3 +103,4 @@ def selenium_download_html(url, payload, submit_button):
 #<a id="ctl00_FullRegion_MainRegion_ContentRegion_ContentFullRegion_ContentLeftRegion_CEPGroup1_CEPActive_cepNDPRevBookingArea_Searchbtn_ButtonLink" href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$FullRegion$MainRegion$ContentRegion$ContentFullRegion$ContentLeftRegion$CEPGroup1$CEPActive$cepNDPRevBookingArea$Searchbtn$ButtonLink", "", true, "", "", false, true))'><span class="buttonLeft"></span><span class="buttonBody">Search</span><span class="buttonRight"></span></a>
 if __name__ == "__main__":
     selenium_download_html(flysas_url, payload, "bluebutton")
+    #requests_download_html(flysas_url, payload)
