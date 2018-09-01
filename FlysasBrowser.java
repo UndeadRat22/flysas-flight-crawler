@@ -40,11 +40,12 @@ public class FlysasBrowser {
         webClient.waitForBackgroundJavaScript(javascriptTime);
     }
 
-    public void startSearch() throws IOException {
+    public void startSearch(long javascriptTime) throws IOException {
         HtmlElement button = (HtmlElement) currentPage().getElementById(idButton);
         button.click();
         webClient.setAjaxController(new NicelyResynchronizingAjaxController());
-        webClient.waitForBackgroundJavaScript(10000);
+        webClient.waitForBackgroundJavaScript(javascriptTime);
+        webClient.waitForBackgroundJavaScriptStartingBefore(javascriptTime);
     }
 
     public void selectPassengerCount(int adult, int child, int infant) throws NullPointerException{
