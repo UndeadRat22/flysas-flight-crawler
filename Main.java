@@ -16,7 +16,7 @@ public class Main {
         browser.selectPassengerCount(1, 0, 0);
 
         System.out.println("Starting search");
-        browser.startSearch();
+        browser.startSearch(10000);
         System.out.println("Done");
     }
 }
