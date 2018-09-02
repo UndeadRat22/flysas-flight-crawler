@@ -28,20 +28,27 @@ def scrape_data(filename):
         #set the __id variable if we're working on some obj
         if "id" in departure_container.attrs:
             __id = departure_container.attrs["id"]
-        #parse inner html
-        #print(c)
         if ((c == ["flight", "EffectOff", "EffectOff_nofamily", "segmented"])
         or (c == ['flight', 'segmented', 'SelectedEffectOff', 'SelectedEffectOff_family1'])):
-            print("flight prices ", end = "")
             prices = get_flightdata(departure_container)
-            print(prices)
+            all_prices[__id] = prices
             continue
         
-        #TODO: ?
         if ((c == ["flight", "segments", "EffectOff", "EffectOff_nofamily"])
         or (c == ['flight', 'segments', 'SelectedEffectOff', 'SelectedEffectOff_family1'])):
-            get_stop(departure_container)
+            connection_airport = get_stop(departure_container)
+            all_prices[__id].append(connection_airport)
             continue
+    #TODO use [a-zA-z] and {x} instead of this badboi
+    recommends = get_recommendation_list(html, r"recommendation\[\'ADT\'\] = \{\'price\':\'[0-9]*\.[0-9]*\',\'tax\':\'[0-9]*\.[0-9]*\',\'priceWithoutTax\':\'[0-9]*\.[0-9]*\',\'fee\':\'[0-9]*\.[0-9]\'")
+    for departure in all_prices.items():
+        print(departure)
+    for r in recommends:
+        print(r)
+    
+def get_recommendation_list(html_text, block_pattern):
+    return re.findall(block_pattern, html_text)
+
 
 def get_stop(container):
     stop_wrapper = container.find("td").find("div").find("table").find("tbody")
@@ -53,7 +60,10 @@ def get_stop(container):
         stop = stop.find("div").find("span", class_ = "label")
         if not stop:
             continue
-        print(stop.text)
+        pattern = "Stop over at: [A-Z].*[a-z]"
+        text = stop.text
+        stop_port = re.findall(pattern, text)[0].replace("Stop over at: ", "")
+        return stop_port
 
 def get_flightdata(container):
     prices_wrapper = container.find_all("td", class_ = "fare")
