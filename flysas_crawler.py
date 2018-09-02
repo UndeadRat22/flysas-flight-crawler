@@ -5,17 +5,12 @@ from flightinfo import FlightInfo
 from bs4 import BeautifulSoup
 import re
 
-def scrape_data(filename):
-    with open(filename, "r") as html_file:
-        html = html_file.read()
-    #less s* to parse ~200kb/1k
-    html = html.replace("\n", "").replace("Â", "")
-    
+def scrape_data(html):
     soup = BeautifulSoup(html, "html.parser")
     #get departure table
     departure_table = soup.find("table", class_ = "WDSEffect_table", id = "WDSEffect_table_0").find("tbody").find_all("tr")
 
-    all_prices = {}
+    all_data = {}
     __id = None
     for departure_container in departure_table:
         #check if there's a class name, if not, we skippedy skip
@@ -31,24 +26,44 @@ def scrape_data(filename):
         if ((c == ["flight", "EffectOff", "EffectOff_nofamily", "segmented"])
         or (c == ['flight', 'segmented', 'SelectedEffectOff', 'SelectedEffectOff_family1'])):
             prices = get_flightdata(departure_container)
-            all_prices[__id] = prices
+            all_data[__id] = prices
             continue
         
         if ((c == ["flight", "segments", "EffectOff", "EffectOff_nofamily"])
         or (c == ['flight', 'segments', 'SelectedEffectOff', 'SelectedEffectOff_family1'])):
             connection_airport = get_stop(departure_container)
-            all_prices[__id].append(connection_airport)
+            all_data[__id].append(connection_airport)
             continue
-    #TODO use [a-zA-z] and {x} instead of this badboi
-    recommends = get_recommendation_list(html, r"recommendation\[\'ADT\'\] = \{\'price\':\'[0-9]*\.[0-9]*\',\'tax\':\'[0-9]*\.[0-9]*\',\'priceWithoutTax\':\'[0-9]*\.[0-9]*\',\'fee\':\'[0-9]*\.[0-9]\'")
-    for departure in all_prices.items():
-        print(departure)
-    for r in recommends:
-        print(r)
     
-def get_recommendation_list(html_text, block_pattern):
-    return re.findall(block_pattern, html_text)
+    return all_data
 
+def construct_flight_info(flights, price_map):
+    infos = []
+    for _id, attribs in flights.items():
+        price = min_from_list(attribs[0])
+        dep_time = attribs[1]
+        arr_time = attribs[2]
+        dep_port = attribs[3]
+        arr_port = attribs[4]
+        con_port = attribs[5]
+        tax = price_map[price]
+        infos.append(FlightInfo(dep_time, arr_time, price, tax, dep_port, arr_port, con_port))
+    return infos
+
+def min_from_list(list):
+    _min = list[0]
+    for num in list:
+        _min = min(_min, num)
+    return _min
+
+def create_price_dict(html):
+    #the Most Magnificent Regex
+    recs = re.findall(r"recommendation\[\'ADT\'\] = \{\'price\':\'[0-9]*\.[0-9]*\',\'tax\':\'[0-9]*\.[0-9]*\',\'priceWithoutTax\':\'[0-9]*\.[0-9]*\',\'fee\':\'[0-9]*\.[0-9]\'", html)
+    _dict = {}
+    for rec in recs:
+        nums = re.findall(r"[0-9]*\.[0-9]*", rec)
+        _dict[nums[0]] = nums[1]
+    return _dict
 
 def get_stop(container):
     stop_wrapper = container.find("td").find("div").find("table").find("tbody")
@@ -91,4 +106,12 @@ def get_flightdata(container):
     return [flight_prices, starttime, endtime, startport, endport]
 
 if __name__ == "__main__":
-    scrape_data("D:\\temp\\index.html")
+    with open("D:\\temp\\index.html", "r") as html_file:
+        html = html_file.read()
+    #less s* to parse 1000kb -> 800kb
+    html = html.replace("\n", "").replace("Â", "")
+    scraped = scrape_data(html)
+    price_map = create_price_dict(html)
+    infos = construct_flight_info(scraped, price_map)
+    for info in infos:
+        print(str(info))
