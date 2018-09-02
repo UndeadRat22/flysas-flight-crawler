@@ -3,6 +3,8 @@ package org.deadrat22;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.util.logging.Level;
@@ -24,8 +26,7 @@ public class FlysasBrowser {
     private WebClient webClient;
 
     public FlysasBrowser() {
-        java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
-        java.util.logging.Logger.getLogger("org.apache.http").setLevel(java.util.logging.Level.OFF);
+        java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
 
         webClient = new WebClient(BrowserVersion.CHROME);
 
@@ -72,6 +73,14 @@ public class FlysasBrowser {
 
     public HtmlPage currentPage() throws NullPointerException{
         return (HtmlPage) webClient.getWebWindows().get(0).getEnclosedPage();
+    }
+
+    public void writeCurrentPageToFile(String filename) throws IOException{
+        String html = currentPage().asXml();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+        writer.write(html);
+        writer.flush();
+        writer.close();
     }
 
 }

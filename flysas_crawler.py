@@ -6,14 +6,14 @@ from bs4 import BeautifulSoup
 import re
 
 def scrape_data(html, table_index):
-    soup = BeautifulSoup(html, "html.parser")
+    __soup = BeautifulSoup(html, "html.parser")
     #get departure table
-    table_id = "WDSEffect_table_" + str(table_index)
-    departure_table = soup.find("table", class_ = "WDSEffect_table", id = table_id).find("tbody").find_all("tr")
+    __table_id = "WDSEffect_table_" + str(table_index)
+    __table = __soup.find("table", class_ = "WDSEffect_table", id = __table_id).find("tbody").find_all("tr")
 
     all_data = {}
     __id = None
-    for departure_container in departure_table:
+    for departure_container in __table:
         #check if there's a class name, if not, we skippedy skip
         if "class" not in departure_container.attrs:
             continue
@@ -38,7 +38,7 @@ def scrape_data(html, table_index):
     
     return all_data
 
-def construct_flight_info(flights, price_map):
+def construct_flight_infos(flights, price_map):
     infos = []
     for _id, attribs in flights.items():
         price = min_from_list(attribs[0])
@@ -113,17 +113,17 @@ if __name__ == "__main__":
         html = html_file.read()
     #less s* to parse 1000kb -> 800kb
     html = html.replace("\n", "").replace("Â", "")
-    out_scraped = scrape_data(html, 0)
+
     price_map = create_price_dict(html)
-    outbound = construct_flight_info(out_scraped, price_map)
-    print(str(outbound[0]))
+    
+    out_scraped = scrape_data(html, 0)
+    ret_scraped = scrape_data(html, 1)
+    print("_______________________________\n|---outbound------------------|\n_______________________________")
+    outbound = construct_flight_infos(out_scraped, price_map)
     for info in outbound:
         print(str(info))
     
-    ret_scraped = scrape_data(html, 1)
-
-    returns = construct_flight_info(ret_scraped, price_map)
-    print("_______________________________")
-    print(str(returns[0]))
+    returns = construct_flight_infos(ret_scraped, price_map)
+    print("_______________________________\n|---return--------------------|\n_______________________________")
     for info in returns:
         print(str(info))
