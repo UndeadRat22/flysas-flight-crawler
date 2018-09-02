@@ -5,10 +5,11 @@ from flightinfo import FlightInfo
 from bs4 import BeautifulSoup
 import re
 
-def scrape_data(html):
+def scrape_data(html, table_index):
     soup = BeautifulSoup(html, "html.parser")
     #get departure table
-    departure_table = soup.find("table", class_ = "WDSEffect_table", id = "WDSEffect_table_0").find("tbody").find_all("tr")
+    table_id = "WDSEffect_table_" + str(table_index)
+    departure_table = soup.find("table", class_ = "WDSEffect_table", id = table_id).find("tbody").find_all("tr")
 
     all_data = {}
     __id = None
@@ -86,6 +87,8 @@ def get_flightdata(container):
     for wrapped_price in prices_wrapper:
         price = wrapped_price.find("div", class_ = "choice")
         price = price.find("span", class_ = "price")
+        if not price:
+            continue
         price = price.find("span", class_ = "number")
 
         if "data-price" not in price.attrs:
@@ -110,8 +113,17 @@ if __name__ == "__main__":
         html = html_file.read()
     #less s* to parse 1000kb -> 800kb
     html = html.replace("\n", "").replace("Â", "")
-    scraped = scrape_data(html)
+    out_scraped = scrape_data(html, 0)
     price_map = create_price_dict(html)
-    infos = construct_flight_info(scraped, price_map)
-    for info in infos:
+    outbound = construct_flight_info(out_scraped, price_map)
+    print(str(outbound[0]))
+    for info in outbound:
+        print(str(info))
+    
+    ret_scraped = scrape_data(html, 1)
+
+    returns = construct_flight_info(ret_scraped, price_map)
+    print("_______________________________")
+    print(str(returns[0]))
+    for info in returns:
         print(str(info))
