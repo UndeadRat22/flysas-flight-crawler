@@ -113,7 +113,8 @@ if __name__ == "__main__":
         html = html_file.read()
     #less s* to parse 1000kb -> 800kb
     html = html.replace("\n", "").replace("Â", "")
-
+    
+    #TODO all of the scraping could be done in parallel
     price_map = create_price_dict(html)
     
     out_scraped = scrape_data(html, 0)
