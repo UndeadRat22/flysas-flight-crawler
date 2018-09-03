@@ -4,8 +4,8 @@ task:
 
 workflow:
 - the java program manages all of the work.
-- the java program downloads the webpage with given parameters
+- the java program downloads the webpage with the given parameters
 - the java program saves the page to a location on the HDD (set to "D:\temp\index.html")
-- the java calls python through windows cmd (python code path is set to "D:\_root\programming\Python\infare\flysas\")
+- the java prgoram calls python through windows cmd (python code path is set to "D:\_root\programming\Python\infare\flysas\")
 - the python program parses the html file using BeautifulSoup and regular expressions and outputs to cmd
 - the java program reads the python output and redirects to stdout
